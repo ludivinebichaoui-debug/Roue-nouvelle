@@ -3,21 +3,25 @@ const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
 
 // ==========================================
-// CONFIGURATION STRICTE DES POURCENTAGES (Total = 100%)
+// CONFIGURATION DES PROBABILITÉS STRICTES (TOTAL = 100%)
 // ==========================================
-const prizes = [
-    { label: "AVEDA",         color: "#d4af37", text: "#000000", isWin: true,  poids: 5,     msg: "Magnifique ! Un produit de la gamme éco-luxe AVEDA vous est offert ! 🧴" },
-    { label: "PAS CETTE FOIS",color: "#1a1a1a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Pas cette fois ! Toute l'équipe vous remercie pour votre avis." },
-    { label: "SOIN OFFERT",   color: "#d4af37", text: "#000000", isWin: true,  poids: 30,    msg: "Exceptionnel ! Vous gagnez un soin profond personnalisé offert ! 💆‍♀️" },
-    { label: "PLUS TARD",     color: "#2a2a2a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Presque ! Merci beaucoup pour votre gentillesse et votre soutien." },
-    { label: "SCHWARZKOPF+",  color: "#d4af37", text: "#000000", isWin: true,  poids: 10,    msg: "Félicitations ! Un produit Schwarzkopf, American Crew ou Depot vous est offert ! ✨" },
-    { label: "ESSAYE ENCORE", color: "#1a1a1a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Dommage ! Merci d'avoir pris le temps de nous laisser une note." },
-    { label: "SOIN OFFERT",   color: "#d4af37", text: "#000000", isWin: true,  poids: 0,     msg: "" }, // Laissé à 0 pour garder l'alternance visuelle parfaite de la roue
-    { label: "DOMMAGE",       color: "#2a2a2a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Ce sera pour une prochaine fois ! Merci pour votre précieuse fidélité." }
-];
+// Ajustez ces 4 chiffres pour changer la difficulté du jeu.
+const CHANCE_PERDRE         = 55; // 55% de chances de perdre
+const CHANCE_SOIN_OFFERT    = 30; // 30% de chances de gagner le soin
+const CHANCE_SCHWARZKOPF    = 10; // 10% de chances pour Schwarzkopf/Crew/Depot
+const CHANCE_AVEDA          = 5;  // 5% de chances pour Aveda
 
-// Note mathématique : Les 4 cases perdantes cumulées font exactement 55% (13.75 x 4).
-// La case 3 (SOIN OFFERT) porte les 30% de chance à elle seule pour ce lot.
+// Visuel des 8 segments de la roue (Alternance Or et Noir)
+const prizes = [
+    { label: "AVEDA",         color: "#d4af37", text: "#000000", isWin: true,  msg: "Magnifique ! Un produit de la gamme éco-luxe AVEDA vous est offert ! 🧴" },
+    { label: "PAS CETTE FOIS",color: "#1a1a1a", text: "#ffffff", isWin: false, msg: "Pas cette fois ! Toute l'équipe vous remercie pour votre avis." },
+    { label: "SOIN OFFERT",   color: "#d4af37", text: "#000000", isWin: true,  msg: "Exceptionnel ! Vous gagnez un soin profond personnalisé offert ! 💆‍♀️" },
+    { label: "PLUS TARD",     color: "#2a2a2a", text: "#ffffff", isWin: false, msg: "Presque ! Merci beaucoup pour votre gentillesse et votre soutien." },
+    { label: "SCHWARZKOPF+",  color: "#d4af37", text: "#000000", isWin: true,  msg: "Félicitations ! Un produit Schwarzkopf, American Crew ou Depot vous est offert ! ✨" },
+    { label: "ESSAYE ENCORE", color: "#1a1a1a", text: "#ffffff", isWin: false, msg: "Dommage ! Merci d'avoir pris le temps de nous laisser une note." },
+    { label: "SOIN OFFERT",   color: "#d4af37", text: "#000000", isWin: true,  msg: "Exceptionnel ! Vous gagnez un soin profond personnalisé offert ! 💆‍♀️" },
+    { label: "DOMMAGE",       color: "#2a2a2a", text: "#ffffff", isWin: false, msg: "Ce sera pour une prochaine fois ! Merci pour votre précieuse fidélité." }
+];
 
 const numSegments = prizes.length;
 const segmentAngle = (2 * Math.PI) / numSegments;
@@ -48,16 +52,9 @@ function drawWheel() {
         ctx.translate(centerX, centerY);
         ctx.rotate(angle + segmentAngle / 2);
         ctx.fillStyle = prizes[i].text;
-        
-        // Ajustement de la police pour l'iPad
         ctx.font = "bold 13px Montserrat";
         ctx.textAlign = "right";
-        
-        // Si c'est la case vide esthétique, on écrit quand même un lot visuel
-        let visualLabel = prizes[i].label;
-        if (i === 6) visualLabel = "PRODUIT BG"; 
-        
-        ctx.fillText(visualLabel, radius - 30, 5);
+        ctx.fillText(prizes[i].label, radius - 30, 5);
         ctx.restore();
     }
 
@@ -68,19 +65,27 @@ function drawWheel() {
     ctx.stroke();
 }
 
-// Algorithme de tirage au sort pondéré
-function getWeightedRandomIndex() {
-    let totalPoids = 0;
-    prizes.forEach(p => totalPoids += p.poids);
+// Nouvel algorithme mathématique basé sur un tirage de 1 à 100
+function getStrictRandomIndex() {
+    const tirage = Math.random() * 100; // Génère un nombre entre 0 et 100
 
-    let random = Math.random() * totalPoids;
-    for (let i = 0; i < prizes.length; i++) {
-        if (random < prizes[i].poids) {
-            return i;
-        }
-        random -= prizes[i].poids;
+    // 1. Cas Aveda : de 0 à 5 (5% de chance) -> Case index 0
+    if (tirage < CHANCE_AVEDA) {
+        return 0; 
     }
-    return 0;
+    // 2. Cas Schwarzkopf : de 5 à 15 (10% de chance) -> Case index 4
+    else if (tirage < (CHANCE_AVEDA + CHANCE_SCHWARZKOPF)) {
+        return 4; 
+    }
+    // 3. Cas Soin Offert : de 15 à 45 (30% de chance) -> On distribue sur les cases 2 ou 6
+    else if (tirage < (CHANCE_AVEDA + CHANCE_SCHWARZKOPF + CHANCE_SOIN_OFFERT)) {
+        return Math.random() < 0.5 ? 2 : 6; 
+    }
+    // 4. Cas Perdre : de 45 à 100 (55% de chance) -> On distribue au hasard sur les cases perdantes (1, 3, 5, 7)
+    else {
+        const perdantes = [1, 3, 5, 7];
+        return perdantes[Math.floor(Math.random() * perdantes.length)];
+    }
 }
 
 // Lancement de la roue
@@ -102,10 +107,10 @@ function spin() {
     isSpinning = true;
     resultBox.classList.add("hidden");
 
-    // Sélection selon vos pourcentages exacts
-    const winningIndex = getWeightedRandomIndex();
+    // Sélection de la case selon le tirage sur 100
+    const winningIndex = getStrictRandomIndex();
 
-    // Calcul de l'angle pour que la case sélectionnée s'arrête pile sous la flèche du haut
+    // Calcul de l'angle parfait pour s'arrêter sous la flèche du haut
     const baseRotations = 2160; 
     const targetAngle = (numSegments - winningIndex) * (360 / numSegments) - 90;
     
@@ -120,7 +125,7 @@ function spin() {
         resultBox.classList.remove("hidden");
         isSpinning = false;
 
-        // Sauvegarde définitive dans le navigateur du client
+        // Sauvegarde définitive dans le navigateur
         localStorage.setItem('roue_salon_deja_joue', item.label);
 
     }, 6000); 
