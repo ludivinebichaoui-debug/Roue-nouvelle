@@ -1,25 +1,29 @@
 let isSpinning = false;
-let currentRotation = 0;
-
 const canvas = document.getElementById('wheelCanvas');
 const ctx = canvas.getContext('2d');
 
-// Configuration précise des 8 segments mélangés (Alternance Noir & Or)
+// ==========================================
+// CONFIGURATION STRICTE DES POURCENTAGES (Total = 100%)
+// ==========================================
 const prizes = [
-    { label: "AVEDA OFFERT", color: "#d4af37", text: "#000000", isWin: true, msg: "Un shampooing de la gamme AVEDA vous est offert ! 🧴" },
-    { label: "PAS CETTE FOIS", color: "#1a1a1a", text: "#ffffff", isWin: false, msg: "Pas cette fois ! Toute l'équipe vous remercie pour votre avis." },
-    { label: "REMISE -10%", color: "#d4af37", text: "#000000", isWin: true, msg: "Vous bénéficiez de -10% sur votre prochaine prestation ! 💇‍♂️" },
-    { label: "PLUS TARD", color: "#2a2a2a", text: "#ffffff", isWin: false, msg: "Presque ! Merci beaucoup pour votre gentillesse et votre soutien." },
-    { label: "SOIN PROFOND", color: "#d4af37", text: "#000000", isWin: true, msg: "Un soin profond personnalisé vous est offert ! 💆‍♀️" },
-    { label: "ESSAYE ENCORE", color: "#1a1a1a", text: "#ffffff", isWin: false, msg: "Dommage ! Merci d'avoir pris le temps de nous laisser une note." },
-    { label: "SCHWARZKOPF", color: "#d4af37", text: "#000000", isWin: true, msg: "Un shampooing de la gamme Américaine Schwarzkopf déposée vous est offert ! ✨" },
-    { label: "DOMMAGE", color: "#2a2a2a", text: "#ffffff", isWin: false, msg: "Ce sera pour une prochaine fois ! Merci pour votre précieuse fidélité." }
+    { label: "AVEDA",         color: "#d4af37", text: "#000000", isWin: true,  poids: 5,     msg: "Magnifique ! Un produit de la gamme éco-luxe AVEDA vous est offert ! 🧴" },
+    { label: "PAS CETTE FOIS",color: "#1a1a1a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Pas cette fois ! Toute l'équipe vous remercie pour votre avis." },
+    { label: "SOIN OFFERT",   color: "#d4af37", text: "#000000", isWin: true,  poids: 30,    msg: "Exceptionnel ! Vous gagnez un soin profond personnalisé offert ! 💆‍♀️" },
+    { label: "PLUS TARD",     color: "#2a2a2a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Presque ! Merci beaucoup pour votre gentillesse et votre soutien." },
+    { label: "SCHWARZKOPF+",  color: "#d4af37", text: "#000000", isWin: true,  poids: 10,    msg: "Félicitations ! Un produit Schwarzkopf, American Crew ou Depot vous est offert ! ✨" },
+    { label: "ESSAYE ENCORE", color: "#1a1a1a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Dommage ! Merci d'avoir pris le temps de nous laisser une note." },
+    { label: "SOIN OFFERT",   color: "#d4af37", text: "#000000", isWin: true,  poids: 0,     msg: "" }, // Laissé à 0 pour garder l'alternance visuelle parfaite de la roue
+    { label: "DOMMAGE",       color: "#2a2a2a", text: "#ffffff", isWin: false, poids: 13.75, msg: "Ce sera pour une prochaine fois ! Merci pour votre précieuse fidélité." }
 ];
+
+// Note mathématique : Les 4 cases perdantes cumulées font exactement 55% (13.75 x 4).
+// La case 3 (SOIN OFFERT) porte les 30% de chance à elle seule pour ce lot.
 
 const numSegments = prizes.length;
 const segmentAngle = (2 * Math.PI) / numSegments;
+let currentRotation = 0;
 
-// Fonction de dessin de la roue de luxe
+// Dessin de la roue
 function drawWheel() {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
@@ -30,32 +34,33 @@ function drawWheel() {
     for (let i = 0; i < numSegments; i++) {
         const angle = i * segmentAngle;
 
-        // Dessin de la part
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, angle, angle + segmentAngle);
         ctx.fillStyle = prizes[i].color;
         ctx.fill();
 
-        // Ligne de séparation dorée fine
         ctx.lineWidth = 2;
         ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
         ctx.stroke();
 
-        // Placement du texte parfaitement aligné au centre du segment
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(angle + segmentAngle / 2);
         ctx.fillStyle = prizes[i].text;
-        ctx.font = "bold 15px Montserrat";
+        
+        // Ajustement de la police pour l'iPad
+        ctx.font = "bold 13px Montserrat";
         ctx.textAlign = "right";
         
-        // Écrit le texte horizontalement le long du rayon de la roue
-        ctx.fillText(prizes[i].label, radius - 30, 6);
+        // Si c'est la case vide esthétique, on écrit quand même un lot visuel
+        let visualLabel = prizes[i].label;
+        if (i === 6) visualLabel = "PRODUIT BG"; 
+        
+        ctx.fillText(visualLabel, radius - 30, 5);
         ctx.restore();
     }
 
-    // Grand cercle de finition extérieur en laiton/or
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
     ctx.lineWidth = 10;
@@ -63,21 +68,45 @@ function drawWheel() {
     ctx.stroke();
 }
 
+// Algorithme de tirage au sort pondéré
+function getWeightedRandomIndex() {
+    let totalPoids = 0;
+    prizes.forEach(p => totalPoids += p.poids);
+
+    let random = Math.random() * totalPoids;
+    for (let i = 0; i < prizes.length; i++) {
+        if (random < prizes[i].poids) {
+            return i;
+        }
+        random -= prizes[i].poids;
+    }
+    return 0;
+}
+
 // Lancement de la roue
 function spin() {
     if (isSpinning) return;
-    isSpinning = true;
 
     const resultBox = document.getElementById("result-box");
     const resultText = document.getElementById("result-text");
 
+    // Sécurité anti-triche : un seul essai par client
+    const dejaJoue = localStorage.getItem('roue_salon_deja_joue');
+    if (dejaJoue) {
+        resultText.innerHTML = `<strong>Rappel de votre participation</strong><br>Votre code privilège a déjà été attribué lors de votre visite.`;
+        document.querySelector(".result-icon").innerText = "🔒";
+        resultBox.classList.remove("hidden");
+        return;
+    }
+
+    isSpinning = true;
     resultBox.classList.add("hidden");
 
-    // Sélection aléatoire de l'index gagnant (0 à 7)
-    const winningIndex = Math.floor(Math.random() * numSegments);
+    // Sélection selon vos pourcentages exacts
+    const winningIndex = getWeightedRandomIndex();
 
-    // Calcul de l'angle pour aligner le segment gagnant SOUS la flèche du haut (à 270°)
-    const baseRotations = 2160; // 6 tours complets pour l'effet de vitesse
+    // Calcul de l'angle pour que la case sélectionnée s'arrête pile sous la flèche du haut
+    const baseRotations = 2160; 
     const targetAngle = (numSegments - winningIndex) * (360 / numSegments) - 90;
     
     currentRotation += baseRotations + targetAngle - (currentRotation % 360);
@@ -90,8 +119,21 @@ function spin() {
         
         resultBox.classList.remove("hidden");
         isSpinning = false;
-    }, 6000); // 6 secondes de rotation fluide
+
+        // Sauvegarde définitive dans le navigateur du client
+        localStorage.setItem('roue_salon_deja_joue', item.label);
+
+    }, 6000); 
 }
 
-// Initialisation au chargement de la page
-drawWheel();
+window.onload = function() {
+    drawWheel();
+    const dejaJoue = localStorage.getItem('roue_salon_deja_joue');
+    if (dejaJoue) {
+        const resultBox = document.getElementById("result-box");
+        const resultText = document.getElementById("result-text");
+        resultText.innerHTML = `<strong>Merci pour votre fidélité !</strong><br>Votre participation a déjà été validée pour aujourd'hui.`;
+        document.querySelector(".result-icon").innerText = "🔒";
+        resultBox.classList.remove("hidden");
+    }
+};
