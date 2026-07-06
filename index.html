@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roue Privilège - Salon de Coiffure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="background-overlay"></div>
+
+    <div class="container">
+        <h1>Merci pour votre avis ! ✨</h1>
+        <p class="subtitle">Tournez la roue pour découvrir votre privilège</p>
+
+        <div class="wheel-box">
+            <div class="pointer"></div>
+            
+            <canvas id="wheelCanvas" width="600" height="600"></canvas>
+            
+            <button class="spin-btn" onclick="spin()">LANCER</button>
+        </div>
+
+        <div id="result-box" class="hidden">
+            <div class="result-content">
+                <span class="result-icon">✨</span>
+                <p id="result-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
