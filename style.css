@@ -1,0 +1,148 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #1a1a1a;
+    background: #111;
+    position: relative;
+}
+
+/* Arrière-plan flouté (Ambiance Salon de coiffure chic) */
+.background-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1200&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px) brightness(0.35);
+    z-index: -1;
+}
+
+.container {
+    text-align: center;
+    padding: 40px 30px;
+    max-width: 460px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    backdrop-filter: blur(15px);
+}
+
+h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    font-size: 13px;
+    font-style: italic;
+    color: #666;
+    margin-bottom: 35px;
+}
+
+/* Conteneur de la roue */
+.wheel-box {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 0 auto;
+}
+
+/* Flèche supérieure en Or Premium */
+.pointer {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 26px solid #d4af37;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+    z-index: 10;
+}
+
+/* La roue en Canvas (Garantit une netteté absolue) */
+#wheelCanvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+    transition: transform 6s cubic-bezier(0.15, 0.85, 0.15, 1);
+}
+
+/* Bouton Central Style Joaillerie */
+.spin-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75px;
+    height: 75px;
+    background: linear-gradient(135deg, #ffffff 0%, #e6e6e6 100%);
+    border: 3px solid #d4af37;
+    border-radius: 50%;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    color: #111;
+    letter-spacing: 1.5px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: 5;
+}
+
+.spin-btn:active {
+    transform: translate(-50%, -50%) scale(0.92);
+}
+
+/* Écrin de Message de Gain */
+#result-box {
+    background: linear-gradient(135deg, #f7ecd1 0%, #e9cca3 100%);
+    border: 1px solid #d4af37;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-top: 35px;
+    box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+    transition: all 0.5s ease;
+}
+
+#result-box.hidden {
+    opacity: 0;
+    transform: translateY(15px);
+    pointer-events: none;
+}
+
+.result-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.result-icon {
+    font-size: 26px;
+}
+
+#result-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+    line-height: 1.5;
+    text-align: left;
+}
